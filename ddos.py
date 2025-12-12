@@ -1,5 +1,9 @@
-import customtkinter as ctk
-import whois
+import os
+import sys
+import time
+import getpass
+import webbrowser
+import subprocess
 import requests
 
 def launch_gui(): 
