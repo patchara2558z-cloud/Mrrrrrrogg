@@ -1,14 +1,12 @@
-import sys
-import asyncio
-import aiohttp
-import random
-import re
-import itertools
-import string
-import time
-import colorama
-import pystyle
+
 import os
+import sys
+import time
+import getpass
+import webbrowser
+import subprocess
+from datetime import datetime
+from colorama import init, Fore, Style
 
 
 
